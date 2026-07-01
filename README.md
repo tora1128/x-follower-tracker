@@ -1,75 +1,74 @@
 # X Follower Tracker
 
-Xのフォロワー一覧を定期的に保存し、前回との差分から「いなくなった人」をCSVに出す小さなツールです。
+Xのフォロワー一覧を保存し、前回との差分から「いなくなった人」を確認するWebツールです。
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tora1128/x-follower-tracker)
 
-## 配布されて使う人へ
+## 配布する人へ
 
-スマホだけで使う場合は、上の `Deploy to Render` から自分用のページを作ってください。配布元のAPIトークンは使いません。使う人が自分のX APIトークンを入れます。
+1つのWebサービスとして公開し、そのURLを相手に渡せます。配布相手はGitHubやRenderを触る必要はありません。
+
+公開する場合:
+
+1. 上の `Deploy to Render` を押します。
+2. Renderにログインします。
+3. `Deploy Blueprint` を押します。
+4. デプロイ完了後、Renderで発行されたURLを相手に渡します。
+
+この公開サービスでは、配布相手が画面で自分の `X API Bearer Token` とXユーザー名を入力します。Bearer Tokenはサーバーに保存しません。実行時だけ使います。
+
+無料Render設定では、サーバー再起動や再デプロイで保存データが消える場合があります。
+
+## 使う人へ
+
+配布されたURLをスマホで開いてください。画面に次の4つを入力します。
 
 ### 必要なもの
 
-- Renderアカウント
 - X Developer Portalで発行したBearer Token
 - フォロワーを確認したいXアカウントのユーザー名
+- 自分で決める合言葉
 
 ### 使い始める手順
 
-1. このページ上部の `Deploy to Render` を押します。
-2. Renderにログインします。
-3. GitHubの許可画面が出たら許可します。
-4. 入力欄が出たら、下の通りに入れます。
-5. `Deploy Blueprint` を押します。
-6. デプロイ完了後、Renderで発行されたURLを開きます。
+1. 配布されたURLを開きます。
+2. `合言葉`、`X API Bearer Token`、`Xユーザー名` を入力します。
+3. 最初に `正式保存` を1回押します。
+4. 次回から `最新確認` で減った人を確認します。
 
-Renderで入力する値:
+入力する値:
 
 ```text
-X_BEARER_TOKEN=自分のX API Bearer Token
-X_USER_ID=空欄でOK
-X_USERNAME=フォロワーを確認したいXユーザー名。@は付けない
-WEB_APP_KEY=自分で決める合言葉
+合言葉=自分で決める文字。次回も同じものを使う
+X API Bearer Token=自分のX API Bearer Token
+Xユーザー名=フォロワーを確認したいXユーザー名。@は付けない
+X_USER_ID=分からなければ空欄
 ```
 
 例:
 
 ```text
-X_BEARER_TOKEN=AAAAAAAA...
+合言葉=my-secret-12345
+X API Bearer Token=AAAAAAAA...
+Xユーザー名=example_user
 X_USER_ID=
-X_USERNAME=example_user
-WEB_APP_KEY=my-secret-12345
 ```
-
-RenderでURLが発行されたら、最後に `?key=合言葉` を付けて開きます。
-
-```text
-https://your-service.onrender.com/?key=your-web-app-key
-```
-
-例:
-
-```text
-https://x-follower-tracker-abcd.onrender.com/?key=my-secret-12345
-```
-
-画面が開いたら、最初に `正式保存` を1回押します。次回から `最新確認` で減った人を確認できます。
 
 ### 渡された人に送る文面
 
 ```text
-このURLを開いて、上の「Deploy to Render」を押してください。
-https://github.com/tora1128/x-follower-tracker
+このURLを開いてください。
+https://あなたのRender URL
 
 入力欄にはこう入れます。
 
-X_BEARER_TOKEN: 自分のX API Bearer Token
+合言葉: 自分で決める文字。次回も同じものを使う
+X API Bearer Token: 自分のX API Bearer Token
+Xユーザー名: フォロワーを確認したいXユーザー名（@なし）
 X_USER_ID: 空欄でOK
-X_USERNAME: フォロワーを確認したいXユーザー名（@なし）
-WEB_APP_KEY: 自分で決める合言葉
 
-完成したら、RenderのURLの最後に ?key=合言葉 を付けて開きます。
-例: https://xxxxx.onrender.com/?key=my-secret-12345
+最初に「正式保存」を1回押します。
+次回から「最新確認」で減った人を確認できます。
 ```
 
 ## セットアップ

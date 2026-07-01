@@ -8,13 +8,7 @@ services:
     startCommand: "python3 web_app.py"
     healthCheckPath: /health
     envVars:
-      - key: X_BEARER_TOKEN
-        sync: false
-      - key: X_USER_ID
-        sync: false
-      - key: X_USERNAME
-        sync: false
-      - key: WEB_APP_KEY
-        sync: false
+      - key: PUBLIC_MODE
+        value: "true"
       - key: XFT_STORAGE_DIR
         value: /tmp/x-follower-tracker
