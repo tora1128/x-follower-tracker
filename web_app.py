@@ -24,7 +24,8 @@ STORAGE_ROOT = Path(os.getenv("XFT_STORAGE_DIR", str(tracker.STORAGE_DIR)))
 
 
 def public_mode_enabled() -> bool:
-    return os.getenv("PUBLIC_MODE", "").strip().lower() in {"1", "true", "yes", "on"}
+    value = os.getenv("PUBLIC_MODE", "true").strip().lower()
+    return value not in {"0", "false", "no", "off"}
 
 
 def format_dt(value: str) -> str:
@@ -842,6 +843,7 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=int(os.getenv("PORT", "8000")))
     parser.add_argument("--key", default=os.getenv("WEB_APP_KEY", ""))
     parser.add_argument("--public-mode", action="store_true", default=public_mode_enabled())
+    parser.add_argument("--private-mode", action="store_false", dest="public_mode")
     args = parser.parse_args()
 
     AppHandler.public_mode = args.public_mode
