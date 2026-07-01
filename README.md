@@ -2,6 +2,27 @@
 
 Xのフォロワー一覧を定期的に保存し、前回との差分から「いなくなった人」をCSVに出す小さなツールです。
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/tora1128/x-follower-tracker)
+
+## 配布されて使う人へ
+
+スマホだけで使う場合は、上の `Deploy to Render` から自分のRenderにデプロイしてください。配布元のAPIトークンは使いません。各利用者が自分の `X_BEARER_TOKEN` と対象アカウントを設定します。
+
+Renderで入力する値:
+
+```text
+X_BEARER_TOKEN=自分のX API Bearer Token
+X_USER_ID=対象アカウントのID。分からなければ空欄
+X_USERNAME=対象アカウントのユーザー名。X_USER_IDを入れるなら空欄
+WEB_APP_KEY=スマホURL用の長い合言葉
+```
+
+デプロイ後は、Renderで発行されたURLに `?key=WEB_APP_KEYに入れた値` を付けて開きます。
+
+```text
+https://your-service.onrender.com/?key=your-web-app-key
+```
+
 ## セットアップ
 
 Finderで使う場合:
@@ -73,7 +94,9 @@ Webアプリを止めるには、`Webアプリを起動.command` のウィンド
 
 スマホだけで完結させる場合は、Macで起動するのではなく、このツールをクラウドやVPSに置いて公開URLを作ります。
 
-配布相手には次の形式のURLだけを渡します。
+配布相手には、このGitHubリポジトリまたは上の `Deploy to Render` リンクを渡します。あなたの `X_BEARER_TOKEN` は入れないでください。相手が自分のRenderで、自分のAPIトークンを設定します。
+
+相手がデプロイ後に使うURLは次の形式です。
 
 ```text
 https://公開URL/?key=アクセスキー
