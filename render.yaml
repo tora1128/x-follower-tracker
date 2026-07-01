@@ -2,7 +2,7 @@ services:
   - type: web
     name: x-follower-tracker
     runtime: python
-    plan: starter
+    plan: free
     region: singapore
     buildCommand: "true"
     startCommand: "python3 web_app.py"
@@ -17,8 +17,4 @@ services:
       - key: WEB_APP_KEY
         sync: false
       - key: XFT_STORAGE_DIR
-        value: /data
-    disk:
-      name: xft-data
-      mountPath: /data
-      sizeGB: 1
+        value: /tmp/x-follower-tracker
