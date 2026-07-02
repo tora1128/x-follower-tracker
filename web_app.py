@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hmac
 import hashlib
 import html
 import json
@@ -26,6 +27,14 @@ STORAGE_ROOT = Path(os.getenv("XFT_STORAGE_DIR", str(tracker.STORAGE_DIR)))
 def public_mode_enabled() -> bool:
     value = os.getenv("PUBLIC_MODE", "true").strip().lower()
     return value not in {"0", "false", "no", "off"}
+
+
+def site_password() -> str:
+    return os.getenv("SITE_PASSWORD", "").strip()
+
+
+def auth_secret() -> str:
+    return os.getenv("AUTH_SECRET", site_password() or "x-follower-tracker-local-secret")
 
 
 def format_dt(value: str) -> str:
@@ -657,6 +666,43 @@ def render_public_page(
 """
 
 
+def render_login_page(error: str = "") -> str:
+    return f"""<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>X Follower Tracker</title>
+  <style>{styles()}</style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>X Follower Tracker</h1>
+        <div class="subtitle">パスワードを入力してください</div>
+      </div>
+    </header>
+    {render_message("error", error)}
+    <section>
+      <h2>ログイン</h2>
+      <form method="post" action="/login">
+        <div class="form-grid">
+          <label class="full">サイトパスワード
+            <input name="site_password" type="password" autocomplete="current-password" required>
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="primary" type="submit">開く</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
+"""
+
+
 def render_page(
     *,
     key: str,
@@ -704,6 +750,33 @@ class AppHandler(BaseHTTPRequestHandler):
     last_result: dict[str, Any] | None = None
     last_status = ""
     last_error = ""
+
+    def cookie_value(self, name: str) -> str:
+        raw_cookie = self.headers.get("Cookie", "")
+        for part in raw_cookie.split(";"):
+            if "=" not in part:
+                continue
+            key, value = part.strip().split("=", 1)
+            if key == name:
+                return value
+        return ""
+
+    def auth_token(self) -> str:
+        return hmac.new(auth_secret().encode("utf-8"), b"site-auth", hashlib.sha256).hexdigest()
+
+    def site_auth_required(self) -> bool:
+        return self.public_mode and bool(site_password())
+
+    def site_is_authenticated(self) -> bool:
+        if not self.site_auth_required():
+            return True
+        return hmac.compare_digest(self.cookie_value("xft_auth"), self.auth_token())
+
+    def require_site_auth(self) -> bool:
+        if self.site_is_authenticated():
+            return True
+        self.send_html(render_login_page(), HTTPStatus.UNAUTHORIZED)
+        return False
 
     def log_message(self, format: str, *args: Any) -> None:
         return
@@ -759,7 +832,12 @@ class AppHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(encoded)
             return
+        if parsed.path == "/login":
+            self.send_html(render_login_page())
+            return
         if parsed.path == "/" and self.public_mode:
+            if not self.require_site_auth():
+                return
             self.send_html(render_public_page())
             return
         if parsed.path == "/":
@@ -771,7 +849,21 @@ class AppHandler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         parsed = urlparse(self.path)
+        if self.public_mode and parsed.path == "/login":
+            form = self.read_form()
+            attempted_password = form.get("site_password", [""])[0]
+            if site_password() and hmac.compare_digest(attempted_password, site_password()):
+                self.send_response(HTTPStatus.SEE_OTHER)
+                self.send_header("Location", "/")
+                self.send_header("Set-Cookie", f"xft_auth={self.auth_token()}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=2592000")
+                self.end_headers()
+                return
+            self.send_html(render_login_page("パスワードが違います。"), HTTPStatus.UNAUTHORIZED)
+            return
+
         if self.public_mode and parsed.path in {"/public-refresh", "/public-save"}:
+            if not self.require_site_auth():
+                return
             form = self.read_form()
             values = public_inputs(form)
             result = None

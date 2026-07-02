@@ -10,5 +10,9 @@ services:
     envVars:
       - key: PUBLIC_MODE
         value: "true"
+      - key: SITE_PASSWORD
+        sync: false
+      - key: AUTH_SECRET
+        generateValue: true
       - key: XFT_STORAGE_DIR
         value: /tmp/x-follower-tracker
