@@ -116,6 +116,10 @@ def load_snapshot_from_previous_midnight_for(workspace: Path) -> dict[str, Any] 
     return min(candidates, key=fetched_at_local)
 
 
+def load_compare_snapshot_for(workspace: Path) -> dict[str, Any] | None:
+    return load_snapshot_from_previous_midnight_for(workspace) or load_previous_snapshot_for(workspace)
+
+
 def write_snapshot_for(workspace: Path, snapshot: dict[str, Any]) -> Path:
     data_dir_for(workspace).mkdir(parents=True, exist_ok=True)
     reports_dir_for(workspace).mkdir(parents=True, exist_ok=True)
@@ -200,7 +204,7 @@ def fetch_current_from_inputs(values: dict[str, str]) -> tuple[str, list[dict[st
 
 def compare_public(values: dict[str, str]) -> dict[str, Any]:
     workspace = workspace_dir(values["workspace_key"])
-    previous_snapshot = load_snapshot_from_previous_midnight_for(workspace)
+    previous_snapshot = load_compare_snapshot_for(workspace)
     if previous_snapshot is None:
         raise tracker.TrackerError("比較元がありません。最初に「正式保存」を1回押してください。")
 
